@@ -26,10 +26,24 @@
       }
     } else {
       // TODO: form is not valid
+      console.log('Form data is not valid');
     }
   }
 
   async function loginLocal(credentials) {
+    let response = await fetch('/auth/login', { // https://kit.svelte.dev/docs/web-standards#fetch-apis
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(credentials)
+    });
+    if(response.ok) { // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
+      let data = await response.json();
+      console.log(data);
+    } else {
+      // TODO: throw error
+    }
     
   }
 </script>
