@@ -2,7 +2,7 @@ import { json, error } from "@sveltejs/kit";
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
     let { slug } = event.params;
-    let response;
+    let data, headers, id = 1;
     switch (slug) {
         case 'login':
             let requestBody = await event.request.json();
@@ -11,9 +11,13 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
                 isAuthenticated = true;
             }
             if(isAuthenticated) {
-                response = { message: 'Login successful' };
+                data = { 
+                  message: 'Login successful',
+                  user: { email: requestBody.email, id }
+                };
+                headers = { 'Set-Cookie': `session=${id}; Path=/; SameSite=Lax; HttpOnly` } //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
             } else {
-                response = { message: 'Wrong email or password' };
+                data = { message: 'Wrong email or password' };
             }
             
             break;
@@ -21,5 +25,5 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
         default:
             throw error(404, 'Invalid endpoint'); // 404: Not Found
     }
-    return json(response);
+    return json(data, { headers });
 }

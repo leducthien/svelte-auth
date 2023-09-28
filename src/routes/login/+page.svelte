@@ -4,6 +4,7 @@
   // https://svelte.dev/docs/element-directives#on-eventname
 
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
 
   let focusField;
   let message;
@@ -22,7 +23,7 @@
       try {
         await loginLocal(credentials);
       } catch (error) {
-        
+        console.log(error.message);
       }
     } else {
       // TODO: form is not valid
@@ -40,7 +41,13 @@
     });
     if(response.ok) { // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
       let data = await response.json();
-      console.log(data);
+      if(data.user) {
+        console.log(`${data.message}`);
+        return goto('/');
+      }
+      else {
+        console.log(`${data.message}`);
+      }
     } else {
       // TODO: throw error
     }
