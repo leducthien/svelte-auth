@@ -1,29 +1,33 @@
 import { json, error } from "@sveltejs/kit";
+import { findUserByEmail } from '$lib/stores/db';
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
-    let { slug } = event.params;
-    let data, headers, id = 1;
-    switch (slug) {
-        case 'login':
-            let requestBody = await event.request.json();
-            let isAuthenticated = false;
-            if(requestBody.email === 'timducle@yahoo.com' && requestBody.password === '12345678') {
-                isAuthenticated = true;
-            }
-            if(isAuthenticated) {
-                data = { 
-                  message: 'Login successful',
-                  user: { email: requestBody.email, id }
-                };
-                headers = { 'Set-Cookie': `session=${id}; Path=/; SameSite=Lax; HttpOnly` } //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
-            } else {
-                data = { message: 'Wrong email or password' };
-            }
-            
-            break;
-    
-        default:
-            throw error(404, 'Invalid endpoint'); // 404: Not Found
-    }
-    return json(data, { headers });
+  console.log(`API auth route called at ${Date.now()}`);
+  let { slug } = event.params;
+  let data, headers;
+  switch (slug) {
+    case 'login':
+      let requestBody = await event.request.json();
+      let user = await findUserByEmail({email: requestBody.email, password: requestBody.password});
+      if (user) {
+        data = {
+          message: 'Login successful',
+          user
+        };
+        headers = { 'Set-Cookie': `session=${user.id}; Path=/; SameSite=Lax; HttpOnly` } //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
+      } else {
+        data = { message: 'Wrong email or password' };
+        headers = { 'Set-Cookie': `session=; Path=/; SameSite=Lax; HttpOnly; Expires=${new Date().toUTCString()}` };
+      }
+      break;
+    case 'logout':
+      if(event.locals.user) {
+        data = { message: 'Logout successful' };
+        headers = { }
+      }
+      break;
+    default:
+      throw error(404, 'Invalid endpoint'); // 404: Not Found
+  }
+  return json(data, { headers });
 }

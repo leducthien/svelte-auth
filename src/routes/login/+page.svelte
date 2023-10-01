@@ -43,7 +43,7 @@
       let data = await response.json();
       if(data.user) {
         console.log(`${data.message}`);
-        return goto('/');
+        return goto('/', { invalidateAll: true });
       }
       else {
         console.log(`${data.message}`);
@@ -65,7 +65,7 @@
   </label>
   <label>
     Password
-    <input type="password" name="password" placeholder="Password" required minlength="8" maxlength="80" autocomplete="current-password" bind:value={credentials.password} />
+    <input type="password" name="password" placeholder="Password" required minlength="3" maxlength="80" autocomplete="current-password" bind:value={credentials.password} />
   </label>
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
