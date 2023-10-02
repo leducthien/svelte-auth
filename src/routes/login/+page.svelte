@@ -43,7 +43,7 @@
       let data = await response.json();
       if(data.user) {
         console.log(`${data.message}`);
-        return goto('/', { invalidateAll: true });
+        window.location.pathname = '/'; // goto only navigate client-side, will not active hook
       }
       else {
         console.log(`${data.message}`);
