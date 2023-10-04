@@ -1,6 +1,5 @@
 <script>
   import { loginSession } from '$lib/stores';
-  import { goto } from '$app/navigation';
 
   export let data;
   let { user } = data; // data.user is set in layout.server.js
@@ -12,7 +11,7 @@
     });
     if(response.ok) {
       $loginSession = undefined;
-      goto('/login');
+      window.location.pathname = '/login';
     } else {
       console.log(`Error logging out: ${response.status} ${response.statusText}`);
     }

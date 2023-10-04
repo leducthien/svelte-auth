@@ -43,7 +43,7 @@
       let data = await response.json();
       if(data.user) {
         console.log(`${data.message}`);
-        window.location.pathname = '/'; // goto only navigate client-side, will not active hook
+        window.location.pathname = '/'; // goto() only navigate client-side, will not active server hook
       }
       else {
         console.log(`${data.message}`);

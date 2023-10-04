@@ -2,7 +2,7 @@ import { json, error } from "@sveltejs/kit";
 import { findUserByEmail } from '$lib/stores/db';
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
-  console.log(`API auth route called at ${Date.now()}`);
+  console.log(`API auth route called at ${Date.now()} for path ${event.url.pathname}`);
   let { slug } = event.params;
   let data, headers;
   switch (slug) {
@@ -17,13 +17,12 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
         headers = { 'Set-Cookie': `session=${user.id}; Path=/; SameSite=Lax; HttpOnly` } //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
       } else {
         data = { message: 'Wrong email or password' };
-        headers = { 'Set-Cookie': `session=; Path=/; SameSite=Lax; HttpOnly; Expires=${new Date().toUTCString()}` };
       }
       break;
     case 'logout':
       if(event.locals.user) {
         data = { message: 'Logout successful' };
-        headers = { }
+        headers = { 'Set-Cookie': `session=; Path=/; SameSite=Lax; HttpOnly; Expires=${new Date().toUTCString()}` };
       }
       break;
     default:
