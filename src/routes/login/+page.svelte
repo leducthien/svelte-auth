@@ -5,6 +5,7 @@
 
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
+  import { loginSession} from '$lib/stores';
 
   let focusField;
   let message;
@@ -43,7 +44,9 @@
       let data = await response.json();
       if(data.user) {
         console.log(`${data.message}`);
-        window.location.pathname = '/'; // goto() only navigate client-side, will not active server hook
+        $loginSession = data.user;
+        // window.location.pathname = '/'; // goto() only navigate client-side, will not active server hook
+        goto('/');
       }
       else {
         console.log(`${data.message}`);

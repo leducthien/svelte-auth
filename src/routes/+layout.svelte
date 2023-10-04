@@ -1,5 +1,7 @@
 <script>
+  console.log(`Root layout called at ${Date.now()} for ${window.location.pathname}`);
   import { loginSession } from '$lib/stores';
+  import { goto } from "$app/navigation";
 
   export let data;
   let { user } = data; // data.user is set in layout.server.js
@@ -11,11 +13,13 @@
     });
     if(response.ok) {
       $loginSession = undefined;
-      window.location.pathname = '/login';
+      // window.location.pathname = '/login';
+      goto('/login');
     } else {
       console.log(`Error logging out: ${response.status} ${response.statusText}`);
     }
   }
+  console.log(`- loginSession`, {$loginSession});
 </script>
 
 <nav>
