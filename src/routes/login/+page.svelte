@@ -72,3 +72,4 @@
   </label>
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
+<a href='/forgot'>Forgot your password?</a>

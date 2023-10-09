@@ -16,5 +16,8 @@
 	"volta": {
 		"node": "18.17.1"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@getbrevo/brevo": "^1.0.1"
+	}
 }
