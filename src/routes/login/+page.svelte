@@ -45,7 +45,6 @@
       if(data.user) {
         console.log(`${data.message}`);
         $loginSession = data.user;
-        // window.location.pathname = '/'; // goto() only navigate client-side, will not active server hook
         goto('/');
       }
       else {

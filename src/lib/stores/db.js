@@ -28,3 +28,11 @@ export async function findUserByEmail({email, password}) {
   }
   return null;
 }
+
+export async function findEmail(email) {
+  let user = users.find(user => user.email === email);
+  if(user) {
+    return { id: user.id };
+  }
+  return null;
+}

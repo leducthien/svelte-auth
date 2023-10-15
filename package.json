@@ -10,7 +10,7 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
-		"jsonwebtoken": "^9.0.2",
+		
 		"svelte": "^4.0.5",
 		"vite": "^4.4.2"
 	},
@@ -19,6 +19,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"jsonwebtoken": "^9.0.2",
 		"@getbrevo/brevo": "^1.0.1"
 	}
 }
