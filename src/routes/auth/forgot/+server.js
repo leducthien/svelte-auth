@@ -18,7 +18,7 @@ export async function POST(event) {
           'subject': 'Password reset',
           'sender': { 'email': 'noreply@cani.me', 'name': 'Cani' },
           'to': [{ 'name': 'Thien', 'email': 'timducle@yahoo.com' }],
-          'htmlContent': `<a href="${DOMAIN}/reset/${token}">Reset password</a> {{params.bodyMessage}}`,
+          'htmlContent': `<a href="${DOMAIN}/auth/reset/${token}">Reset password</a> {{params.bodyMessage}}`,
           'params': { 'bodyMessage': 'Your browser will open and ask for new password' }
         }
       );
