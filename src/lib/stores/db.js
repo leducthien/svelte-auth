@@ -36,3 +36,12 @@ export async function findEmail(email) {
   }
   return null;
 }
+
+export async function findUserById(id) {
+  let userId = Number.parseInt(id);
+  let user = users.find(user => user.id === userId);
+  if(user) {
+    return { id: user.id, email: user.email };
+  }
+  return null;
+}

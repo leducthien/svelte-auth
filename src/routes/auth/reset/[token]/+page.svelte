@@ -5,6 +5,9 @@
 
   async function reset() {
     if(form.checkValidity()) {
+      if(password !== confirmPassword) {
+        console.log('Password not match.'); 
+      }
       let response = await fetch('/auth/reset', {
         method: 'PUT',
         headers: {
@@ -15,7 +18,8 @@
       if(response.ok) {
         goto('/auth/reset/success');
       } else {
-        console.log('fetch failed', response.status, response.statusText);
+        let responseBody = await response.json();
+        console.log('fetch failed', responseBody.message, response.status, response.statusText);
       }
     } else {
       console.log('Form is not valid');
