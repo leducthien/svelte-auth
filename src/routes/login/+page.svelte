@@ -61,10 +61,14 @@
 <h1>Sign In</h1>
 
 <form id="signIn" autocomplete="on" novalidate>
-  <label>
-    Email
-    <input type="email" name="email" placeholder="Email" required autocomplete="email" bind:this={focusField} bind:value={credentials.email} />
-  </label>
+  <div>
+    <label>
+      Email
+      <input type="email" name="email" placeholder="Email" required autocomplete="email" bind:this={focusField} bind:value={credentials.email} />
+    </label>
+    <div class="invalid-input">Please enter valid email address</div>
+  </div>
+  
   <label>
     Password
     <input type="password" name="password" placeholder="Password" required minlength="3" maxlength="80" autocomplete="current-password" bind:value={credentials.password} />
