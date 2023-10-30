@@ -20,6 +20,7 @@
 
   async function login() {
     let form = document.getElementById('signIn');
+    let emailField, emailError;
     if(form.checkValidity()) { // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
       try {
         await loginLocal(credentials);
@@ -29,6 +30,16 @@
     } else {
       // TODO: form is not valid
       console.log('Form data is not valid');
+      emailField = document.getElementById('email');
+      emailError = document.getElementById('emsg');
+      if(emailField.checkValidity()) {
+        emailField.classList.remove('err');
+        emailError.innerHTML = '';
+      }
+      else {
+        emailField.classList.add('err');
+        emailError.innerHTML = 'Please enter valid email';
+      }
     }
   }
 
@@ -64,15 +75,25 @@
   <div>
     <label>
       Email
-      <input type="email" name="email" placeholder="Email" required autocomplete="email" bind:this={focusField} bind:value={credentials.email} />
+      <input id="email" type="email" name="email" placeholder="Email" required autocomplete="email" bind:this={focusField} bind:value={credentials.email} />
     </label>
-    <div class="invalid-input">Please enter valid email address</div>
+    <div class="emsg" id="emsg"></div>
   </div>
-  
-  <label>
-    Password
-    <input type="password" name="password" placeholder="Password" required minlength="3" maxlength="80" autocomplete="current-password" bind:value={credentials.password} />
-  </label>
+  <div>
+    <label>
+      Password
+      <input type="password" name="password" placeholder="Password" required minlength="3" maxlength="20" autocomplete="current-password" bind:value={credentials.password} />
+    </label>
+    <div class="emsg" id="pmsg"></div>
+  </div>
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
 <a href='/forgot'>Forgot your password?</a>
+
+<style>
+  .emsg {
+    color: #c12020;
+    font-weight: bold;
+    height: 2em;
+  }
+</style>

@@ -1,6 +1,7 @@
 
 https://github.com/nstuyvesant/sveltekit-auth-example
 https://developers.cloudflare.com/pages/framework-guides/deploy-a-svelte-site/
+https://code-boxx.com/show-error-messages-html-forms/
 
 # create-svelte
 
