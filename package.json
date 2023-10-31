@@ -9,9 +9,10 @@
 		"pages:dev": "wrangler pages dev -- npm run dev"
 	},
 	"devDependencies": {
-		"jsonwebtoken": "^9.0.2",
 		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/adapter-cloudflare": "^2.3.3",
 		"@sveltejs/kit": "^1.20.4",
+		
 		"svelte": "^4.0.5",
 		"vite": "^4.4.2"
 	},
@@ -20,6 +21,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"jsonwebtoken": "^9.0.2",
 		"@getbrevo/brevo": "^1.0.1"
 	}
 }
