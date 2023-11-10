@@ -5,6 +5,7 @@ import { JWT_SECRET, BREVO_API_KEY, DOMAIN } from '$env/static/private';
 
 export async function POST(event) {
   console.log(`API route called at ${Date.now()} for path ${event.url.pathname}`);
+  console.log(`Domain env variable: ${DOMAIN}`);
   let requestBody = await event.request.json();
   let user = await findEmail(requestBody.email);
   if(user) {
