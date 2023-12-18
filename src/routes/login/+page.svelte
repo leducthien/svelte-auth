@@ -21,7 +21,7 @@
 
   async function login() {
     let form = document.getElementById("signIn");
-    let emailField, emailError;
+    let emailField, emailError, passwordField, passwordError;
     if (form.checkValidity()) {
       // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
       try {
@@ -93,7 +93,7 @@
         bind:value={credentials.email}
       />
     </label>
-    <span class="emsg" id="emsg" />
+    <div class="emsg" id="emsg" />
   </div>
   <div>
     <label>
@@ -101,12 +101,13 @@
       <input
         type="password"
         name="password"
+        id="password"
         placeholder="Password"
         required        
         bind:value={credentials.password}
       />
     </label>
-    <span class="emsg" id="pmsg" />
+    <div class="emsg" id="pmsg" />
   </div>
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
