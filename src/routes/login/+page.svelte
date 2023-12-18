@@ -39,11 +39,14 @@
         emailError.textContent = "";
       } else {
         emailField.classList.add("err");
-        if (emailField.validity.valueMissing) {
-          emailError.textContent = "A valid email is required";
-        } else if (emailField.validity.typeMismatch) {
-          emailError.textContent = "Value entered is not a valid email";
-        }
+          emailError.textContent = "Please enter a valid email";
+      }
+      passwordField = document.getElementById('password');
+      passwordError = document.getElementById('pmsg');
+      if(passwordField.validity.valid) {
+        passwordError.textContent = '';
+      } else {
+        passwordError.textContent = 'Please enter password';
       }
     }
   }
@@ -90,7 +93,7 @@
         bind:value={credentials.email}
       />
     </label>
-    <div class="emsg" id="emsg" />
+    <span class="emsg" id="emsg" />
   </div>
   <div>
     <label>
@@ -99,14 +102,11 @@
         type="password"
         name="password"
         placeholder="Password"
-        required
-        minlength="3"
-        maxlength="20"
-        autocomplete="current-password"
+        required        
         bind:value={credentials.password}
       />
     </label>
-    <div class="emsg" id="pmsg" />
+    <span class="emsg" id="pmsg" />
   </div>
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
