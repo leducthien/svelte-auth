@@ -21,7 +21,6 @@
 
   async function login() {
     let form = document.getElementById("signIn");
-    let emailField, emailError, passwordField, passwordError;
     if (form.checkValidity()) {
       // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
       try {
@@ -30,19 +29,24 @@
         console.log(error.message);
       }
     } else {
-      // TODO: form is not valid
       console.log("Form data is not valid");
-      emailField = document.getElementById("email");
-      emailError = document.getElementById("emsg");
+      for(const field of form.elements) {
+        if(field instanceof HTMLInputElement && !field.checkValidity()) {
+          field.focus();
+          break;
+        }
+      }
+      let emailField = document.getElementById("email");
+      let emailError = document.getElementById("emsg");
       if (emailField.validity.valid) {
-        emailField.classList.remove("err");
+        // emailField.classList.remove("emsg");
         emailError.textContent = "";
       } else {
-        emailField.classList.add("err");
-          emailError.textContent = "Please enter a valid email";
+        // emailField.classList.add("emsg");
+        emailError.textContent = "Please enter a valid email";
       }
-      passwordField = document.getElementById('password');
-      passwordError = document.getElementById('pmsg');
+      let passwordField = document.getElementById('password');
+      let passwordError = document.getElementById('pmsg');
       if(passwordField.validity.valid) {
         passwordError.textContent = '';
       } else {
@@ -78,6 +82,8 @@
 
 <h1>Sign In</h1>
 
+<p>Please enter a valid email and password of the account you have registered with our site when you singed up.</p>
+
 <form id="signIn" autocomplete="on" novalidate>
   <div>
     <label>
@@ -93,7 +99,7 @@
         bind:value={credentials.email}
       />
     </label>
-    <div class="emsg" id="emsg" />
+    <div id="emsg" class="emsg" />
   </div>
   <div>
     <label>
@@ -112,11 +118,25 @@
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
 <a href="/forgot">Forgot your password?</a>
+<a href="/">Don't have an account. Sign up free.</a>
 
 <style>
+  /* Styles for invalid fields */
+  input:invalid {
+    border-color: #900;
+    background-color: #fdd;
+  }
+
+  input:focus:invalid {
+    outline: none;
+  }
+
+  /* Styles for error message */
   .emsg {
-    color: #c12020;
-    font-weight: bold;
-    height: 2em;
+    color: #900;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    height: 1.5em;
   }
 </style>
