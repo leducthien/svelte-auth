@@ -8,31 +8,28 @@
   import { loginSession } from "$lib/stores";
 
   let focusField;
-  let message;
+  let notice;
   let credentials = {
     email: "",
     password: "",
   };
 
-  onMount(() => {
-    // https://svelte.dev/docs/svelte#onmount
+  onMount(() => { // https://svelte.dev/docs/svelte#onmount
     focusField.focus();
   });
 
   async function login() {
     let form = document.getElementById("signIn");
-    if (form.checkValidity()) {
-      // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
+    if (form.checkValidity()) { // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
       try {
         await loginLocal(credentials);
       } catch (error) {
-        console.log(error.message);
+        notice.textContent = error.message;
       }
-    } else {
-      console.log("Form data is not valid");
+    } else { // Form data is not valid
       for(const field of form.elements) {
         if(field instanceof HTMLInputElement && !field.checkValidity()) {
-          field.focus();
+          field.focus(); // Focus on the first input error
           break;
         }
       }
@@ -83,6 +80,8 @@
 <h1>Sign In</h1>
 
 <p>Please enter a valid email and password of the account you have registered with our site when you singed up.</p>
+
+<div bind:this={notice} class="notice" />
 
 <form id="signIn" autocomplete="on" novalidate>
   <div>
@@ -138,5 +137,10 @@
     padding: 0;
     box-sizing: border-box;
     height: 1.5em;
+  }
+
+  /* Styles for the notice section */
+  .notice {
+    height: 1.5em
   }
 </style>
