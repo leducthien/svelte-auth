@@ -2,7 +2,7 @@ import { json, error } from "@sveltejs/kit";
 import { findUserByEmail } from '$lib/stores/db';
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
-  console.log(`API auth route called at ${Date.now()} for path ${event.url.pathname}`);
+  console.log(`API auth route called at ${new Date()} for path ${event.url.pathname}`);
   let { slug } = event.params;
   let data, headers;
   switch (slug) {

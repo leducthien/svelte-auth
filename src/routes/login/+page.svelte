@@ -53,23 +53,21 @@
   }
 
   async function loginLocal(credentials) {
-    let response = await fetch("/auth/login", {
-      // https://kit.svelte.dev/docs/web-standards#fetch-apis
+    let response = await fetch("/auth/login", { // https://kit.svelte.dev/docs/web-standards#fetch-apis
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(credentials),
     });
-    if (response.ok) {
-      // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
+    if (response.ok) { // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
       let data = await response.json();
       if (data.user) {
         console.log(`${data.message}`);
         $loginSession = data.user;
         goto("/");
       } else {
-        console.log(`${data.message}`);
+        notice.textContent = data.message;
       }
     } else {
       // TODO: throw error
