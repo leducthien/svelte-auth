@@ -14,27 +14,30 @@
     password: "",
   };
 
-  onMount(() => { // https://svelte.dev/docs/svelte#onmount
+  onMount(() => {
+    // https://svelte.dev/docs/svelte#onmount
     focusField.focus();
   });
 
   async function login() {
     let form = document.getElementById("signIn");
-    if (form.checkValidity()) { // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
-      try {
-        await loginLocal(credentials);
-      } catch (error) {
-        notice.textContent = error.message;
-      }
-    } else { // Form data is not valid
-      for(const field of form.elements) {
-        if(field instanceof HTMLInputElement && !field.checkValidity()) {
+    let emailField = document.getElementById("email");
+    let emailError = document.getElementById("emsg");
+    let passwordField = document.getElementById("password");
+    let passwordError = document.getElementById("pmsg");
+    if (form.checkValidity()) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
+      emailError.textContent = "";
+      passwordError.textContent = "";
+      await loginLocal(credentials);
+    } else {
+      // Form data is not valid
+      for (const field of form.elements) {
+        if (field instanceof HTMLInputElement && !field.checkValidity()) {
           field.focus(); // Focus on the first input error
           break;
         }
       }
-      let emailField = document.getElementById("email");
-      let emailError = document.getElementById("emsg");
       if (emailField.validity.valid) {
         // emailField.classList.remove("emsg");
         emailError.textContent = "";
@@ -42,42 +45,47 @@
         // emailField.classList.add("emsg");
         emailError.textContent = "Please enter a valid email";
       }
-      let passwordField = document.getElementById('password');
-      let passwordError = document.getElementById('pmsg');
-      if(passwordField.validity.valid) {
-        passwordError.textContent = '';
+      if (passwordField.validity.valid) {
+        passwordError.textContent = "";
       } else {
-        passwordError.textContent = 'Please enter password';
+        passwordError.textContent = "Please enter a password";
       }
     }
   }
 
   async function loginLocal(credentials) {
-    let response = await fetch("/auth/login", { // https://kit.svelte.dev/docs/web-standards#fetch-apis
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(credentials),
-    });
-    if (response.ok) { // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
-      let data = await response.json();
-      if (data.user) {
-        console.log(`${data.message}`);
-        $loginSession = data.user;
-        goto("/");
-      } else {
-        notice.textContent = data.message;
+    try {
+      let response = await fetch("/auth/login", { // https://kit.svelte.dev/docs/web-standards#fetch-apis
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
+      if (response.ok) { // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
+        let data = await response.json();
+        if (data.user) {
+          console.log(`${data.message}`);
+          $loginSession = data.user;
+          goto("/");
+        } else {
+          notice.textContent = data.message;
+        }
+      } else { // Some error
+        notice.textContent = response.status + ' ' + response.statusText;
       }
-    } else {
-      // TODO: throw error
+    } catch (error) {
+      notice.textContent = error.message;
     }
   }
 </script>
 
 <h1>Sign In</h1>
 
-<p>Please enter a valid email and password of the account you have registered with our site when you singed up.</p>
+<p>
+  Please enter a valid email and password of the account you have registered
+  with our site when you singed up.
+</p>
 
 <div bind:this={notice} class="notice" />
 
@@ -106,7 +114,7 @@
         name="password"
         id="password"
         placeholder="Password"
-        required        
+        required
         bind:value={credentials.password}
       />
     </label>
@@ -139,6 +147,6 @@
 
   /* Styles for the notice section */
   .notice {
-    height: 1.5em
+    height: 1.5em;
   }
 </style>

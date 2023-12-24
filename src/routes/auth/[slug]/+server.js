@@ -14,7 +14,7 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
           message: 'Login successful',
           user
         };
-        headers = { 'Set-Cookie': `session=${user.id}; Path=/; SameSite=Lax; HttpOnly` } //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
+        headers = { 'Set-Cookie': `session=${user.id}; Path=/; SameSite=Lax; HttpOnly` }; //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
       } else {
         data = { message: 'Wrong email or password' };
       }
