@@ -25,10 +25,12 @@
     let emailError = document.getElementById("emsg");
     let passwordField = document.getElementById("password");
     let passwordError = document.getElementById("pmsg");
+    emailError.textContent = "";
+    passwordError.textContent = "";
+    notice.textContent = "";
     if (form.checkValidity()) {
       // https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/checkValidity
-      emailError.textContent = "";
-      passwordError.textContent = "";
+
       await loginLocal(credentials);
     } else {
       // Form data is not valid
@@ -40,14 +42,11 @@
       }
       if (emailField.validity.valid) {
         // emailField.classList.remove("emsg");
-        emailError.textContent = "";
       } else {
         // emailField.classList.add("emsg");
         emailError.textContent = "Please enter a valid email";
       }
-      if (passwordField.validity.valid) {
-        passwordError.textContent = "";
-      } else {
+      if (!passwordField.validity.valid) {
         passwordError.textContent = "Please enter a password";
       }
     }
@@ -55,14 +54,16 @@
 
   async function loginLocal(credentials) {
     try {
-      let response = await fetch("/auth/login", { // https://kit.svelte.dev/docs/web-standards#fetch-apis
+      let response = await fetch("/auth/login", {
+        // https://kit.svelte.dev/docs/web-standards#fetch-apis
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
       });
-      if (response.ok) { // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
+      if (response.ok) {
+        // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
         let data = await response.json();
         if (data.user) {
           console.log(`${data.message}`);
@@ -71,8 +72,9 @@
         } else {
           notice.textContent = data.message;
         }
-      } else { // Some error
-        notice.textContent = response.status + ' ' + response.statusText;
+      } else {
+        // Some error
+        notice.textContent = response.status + " " + response.statusText;
       }
     } catch (error) {
       notice.textContent = error.message;
@@ -148,5 +150,6 @@
   /* Styles for the notice section */
   .notice {
     height: 1.5em;
+    color: #900;
   }
 </style>
