@@ -17,7 +17,7 @@
       method: 'POST'
     });
     if(response.ok) {
-      $loginSession = undefined;
+      $loginSession = undefined; // clear login session on the client
       goto('/login');
     } else {
       console.log(`Error logging out: ${response.status} ${response.statusText}`);
@@ -29,7 +29,7 @@
 <nav>
   <a href="/">Home</a>
   {#if $loginSession}
-    <a href="/protected">Protected</a>
+    <a href="/profile">Profile</a>
     <a href={'#'} on:click|preventDefault={logout}>Sign out</a>
   {:else}
     <a href="/login">Sign In</a>
