@@ -1,4 +1,4 @@
-let users = [
+let users = [ // Simulate the users table in db 
   {
     id: 1,
     email: 'timducle@yahoo.com',
@@ -8,6 +8,19 @@ let users = [
     id: 2,
     email: 'thientaidientoan@yahoo.com',
     password: '345'
+  }
+];
+
+let sessions = [ // Simulate the sessions table in db
+  {
+    id: 1,
+    userId: 1,
+    maxAge: 3600 // The session expires in 3600s or 1h. This is used for the Max-Age attribute of the Set-Cookie header
+  },
+  {
+    id: 2,
+    userId: 2,
+    maxAge: 1800 // The session expires in 1800s or 30m
   }
 ];
 

@@ -6,10 +6,10 @@ export async function handle({event, resolve}) { // https://kit.svelte.dev/docs/
   let sessionId = cookies.get('session');
   console.log(`- Session id: ${sessionId}`);
   if(sessionId) {
-    let user = await findUserBySessionId(sessionId);    
+    let user = await findUserBySessionId(sessionId); // Only return an user if the session is valid and not expired.    
     if(user) {
       event.locals.user = user;
-    } else { // There's a session id but no corresponding user. It could be a malicious request.
+    } else { // There's a session id but no corresponding user. It could be the associate session has expired.
       cookies.delete('session', { path: '/' });
     }
   }

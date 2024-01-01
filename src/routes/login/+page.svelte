@@ -82,6 +82,10 @@
   }
 </script>
 
+{#if $loginSession}
+<p>User with email {$loginSession.user.email} is already signed in</p>
+{:else}
+
 <h1>Sign In</h1>
 
 <p>
@@ -126,6 +130,7 @@
 </form>
 <a href="/forgot">Forgot your password?</a>
 <a href="/">Don't have an account. Sign up free.</a>
+{/if}
 
 <style>
   /* Styles for invalid fields */
