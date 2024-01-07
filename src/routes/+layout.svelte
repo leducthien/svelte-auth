@@ -1,6 +1,6 @@
 <script>
   import { loginSession } from '$lib/stores'; // It's recommended to not allow client-side javascript to access cookies. That's why we need a client-side store to save logged in user info such as email and session expire time so all client pages can access
-  import { goto } from "$app/navigation";
+  import { goto, beforeNavigate } from "$app/navigation";
   import { onMount } from "svelte";
 
   export let data;
@@ -10,6 +10,14 @@
     let { user } = data; // data.user is set in layout.server.js
     $loginSession = user; 
     console.log(`- loginSession`, {$loginSession});
+  });
+
+  beforeNavigate(() => {
+    let expirationDate = $loginSession?.expires ? new Date($loginSession.expires) : undefined;
+    if(expirationDate && expirationDate < new Date()) {
+      console.log('Login session has expired');
+      $loginSession = null;
+    }
   });
 
   async function logout() {

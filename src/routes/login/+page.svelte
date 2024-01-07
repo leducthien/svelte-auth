@@ -65,9 +65,9 @@
       if (response.ok) {
         // https://developer.mozilla.org/en-US/docs/Web/API/Response/ok
         let data = await response.json();
-        if (data.user) {
+        if (data.userLoginSession) {
           console.log(`${data.message}`);
-          $loginSession = data.user;
+          $loginSession = data.userLoginSession;
           goto("/");
         } else {
           notice.textContent = data.message;
@@ -83,7 +83,7 @@
 </script>
 
 {#if $loginSession}
-<p>User with email {$loginSession.user.email} is already signed in</p>
+<p>User with email {$loginSession.email} is already signed in</p>
 {:else}
 
 <h1>Sign In</h1>

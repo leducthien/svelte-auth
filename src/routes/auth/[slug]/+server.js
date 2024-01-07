@@ -1,5 +1,5 @@
 import { json, error } from '@sveltejs/kit';
-import { findUserByEmail } from '$lib/stores/db';
+import { login } from '$lib/stores/db';
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
   console.log(`API auth route called at ${Date.now()} for path ${event.url.pathname}`);
@@ -9,14 +9,19 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
   switch (slug) {
     case 'login':
       let requestBody = await event.request.json();
-      let user = await findUserByEmail({email: requestBody.email, password: requestBody.password});
-      if (user) {
+      let loginSession = await login({email: requestBody.email, password: requestBody.password});
+      if (loginSession) {
         data = {
           message: 'Login successful',
-          user
+          userLoginSession: {
+            sessionId: loginSession.id,
+            email: loginSession.email,
+            expires: loginSession.expires
+          }
         };
         // headers = { 'Set-Cookie': `session=${user.id}; Path=/; SameSite=Lax; HttpOnly` }; // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
-        cookies.set('session', user.id, { path: '/' }); // https://kit.svelte.dev/docs/types#public-types-cookies
+        cookies.set('session', loginSession.id, { path: '/', expires: new Date(loginSession.expires) }); // https://kit.svelte.dev/docs/types#public-types-cookies
+        console.log('- Login result', data);
       } else {
         data = { message: 'Wrong email or password' };
       }
