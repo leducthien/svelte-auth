@@ -1,7 +1,7 @@
 -- Invoke this script with 
 -- PGPASSWORD='FrebuMIju2' psql -d postgres -f db-init.sql -h 127.0.0.1 -p 5443 -U postgres
 
--- Create role for authetication
+-- Create role for authentication
 DO $do$
 BEGIN
   IF NOT EXISTS (
@@ -12,4 +12,6 @@ BEGIN
   END IF;
 END
 $do$;
+
+
 
