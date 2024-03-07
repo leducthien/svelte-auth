@@ -27,3 +27,9 @@ CREATE DATABASE auth
   ENCODING = 'UTF8'
   TABLESPACE = pg_default
   CONNECTION LIMIT = -1;
+
+\connect auth
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
