@@ -14,4 +14,16 @@ END
 $do$;
 
 
+-- pg_backend_pid: https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE
+SELECT pid, pg_terminate_backend(pid) 
+FROM pg_stat_activity
+WHERE datname = 'auth' AND pid <> pg_backend_pid();
 
+DROP DATABASE IF EXISTS auth;
+
+CREATE DATABASE auth
+  WITH
+  OWNER = auth
+  ENCODING = 'UTF8'
+  TABLESPACE = pg_default
+  CONNECTION LIMIT = -1;
