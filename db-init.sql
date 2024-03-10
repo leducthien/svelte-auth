@@ -33,3 +33,32 @@ CREATE DATABASE auth
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- https://stackoverflow.com/questions/44008252/what-does-collate-pg-catalog-default-do-on-text-attribute-in-postgres-database
+-- https://stackoverflow.com/questions/37984264/purpose-of-collate-in-postgres
+CREATE TABLE IF NOT EXISTS public.users (
+  id int NOT NULL GENERATED ALWAYS AS IDENTITY,
+  email varchar(80) NOT NULL COLLATE pg_catalog."default",  
+  password varchar(20) NOT NULL COLLATE pg_catalog."default",
+  CONSTRAINT users_pkey PRIMARY KEY (id),
+  CONSTRAINT users_email_unique UNIQUE (email)
+) TABLESPACE pg_default;
+
+ALTER TABLE public.users OWNER TO auth;
+
+CREATE INDEX users_password ON public.users USING 
+  btree (password COLLATE pg_catalog."default" ASC NULLS LAST) TABLESPACE pg_default;
+
+CREATE TABLE IF NOT EXISTS public.sessions (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id int NOT NULL,
+  expires timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + '02:00:00'::interval),
+  CONSTRAINT sessions_pkey PRIMARY KEY (id),
+  CONSTRAINT sessions_fkey FOREIGN KEY (user_id)
+    REFERENCES public.users (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE
+    NOT VALID
+) TABLESPACE pg_default;
+
+ALTER TABLE public.sessions OWNER TO auth;
