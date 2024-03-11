@@ -52,13 +52,13 @@ CREATE INDEX users_password ON public.users USING
 CREATE TABLE IF NOT EXISTS public.sessions (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   user_id int NOT NULL,
-  expires timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + '02:00:00'::interval),
+  expires timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + '02:00:00'::interval), -- or CAST('02:00:00' AS interval)
   CONSTRAINT sessions_pkey PRIMARY KEY (id),
   CONSTRAINT sessions_fkey FOREIGN KEY (user_id)
     REFERENCES public.users (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
-    NOT VALID
+    NOT VALID -- https://www.postgresql.org/docs/current/sql-altertable.html#SQL-ALTERTABLE-NOTES
 ) TABLESPACE pg_default;
 
 ALTER TABLE public.sessions OWNER TO auth;
