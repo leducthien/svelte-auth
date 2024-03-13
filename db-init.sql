@@ -1,5 +1,5 @@
 -- Invoke this script with 
--- PGPASSWORD='FrebuMIju2' psql -d postgres -f db-init.sql -h 127.0.0.1 -p 5443 -U postgres
+-- PGPASSWORD='FrebuMIju2' psql -d postgres -h 127.0.0.1 -p 5443 -U postgres -f db-init.sql
 
 -- Create role for authentication
 DO $do$
@@ -62,3 +62,33 @@ CREATE TABLE IF NOT EXISTS public.sessions (
 ) TABLESPACE pg_default;
 
 ALTER TABLE public.sessions OWNER TO auth;
+
+CREATE OR REPLACE FUNCTION public.authenticate (input json, OUT response json) 
+  RETURNS json 
+  LANGUAGE 'plpgsql'
+  COST 100
+  VOLATILE
+  PARALLEL UNSAFE
+AS $BODY$
+DECLARE
+  email_input varchar(80) := LOWER(TRIM(input->>'email')::varchar);
+  password_input varchar(80) := (input->>'password')::varchar;
+BEGIN
+  IF email_input IS NULL OR password_input IS NULL THEN
+    response := json_build_object('statusCode', 400, 'status', 'Please enter email and password', 'user', NULL);
+    RETURN;
+  END IF;
+
+  WITH user_authenticated AS (
+    SELECT id FROM public.users
+    WHERE email = email_input AND password = crypt(password_input, password) LIMIT 1
+  ) SELECT json_build_object(
+    'statusCode', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN 200 ELSE 401 END,
+    'status', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN 'Success' ELSE 'Wrong email/password' END,
+    'user', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN (SELECT json_build_object('id', user_authenticated.id, 'email', email_input) FROM user_authenticated) ELSE NULL END,
+    'sessionId', (SELECT create_session(user_authenticated.id) FROM user_authenticated)
+  ) INTO response;
+END;
+$BODY$;
+
+ALTER FUNCTION public.authenticate OWNER TO auth;
