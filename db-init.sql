@@ -65,7 +65,7 @@ ALTER TABLE public.sessions OWNER TO auth;
 
 CREATE OR REPLACE FUNCTION public.authenticate (input json, OUT response json) 
   RETURNS json 
-  LANGUAGE 'plpgsql'
+  LANGUAGE plpgsql
   COST 100
   VOLATILE
   PARALLEL UNSAFE
@@ -85,10 +85,25 @@ BEGIN
   ) SELECT json_build_object(
     'statusCode', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN 200 ELSE 401 END,
     'status', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN 'Success' ELSE 'Wrong email/password' END,
-    'user', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN (SELECT json_build_object('id', user_authenticated.id, 'email', email_input) FROM user_authenticated) ELSE NULL END,
-    'sessionId', (SELECT create_session(user_authenticated.id) FROM user_authenticated)
+    'user', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN (SELECT json_build_object('id', id, 'email', email_input) FROM user_authenticated) ELSE NULL END,
+    'sessionId', (SELECT create_session(id) FROM user_authenticated)
   ) INTO response;
 END;
 $BODY$;
 
 ALTER FUNCTION public.authenticate OWNER TO auth;
+
+CREATE OR REPLACE FUNCTION public.create_session(input_user_id int) 
+  RETURNS uuid
+  LANGUAGE plpgsql
+  COST 100
+  VOLATILE
+  PARALLEL UNSAFE
+AS $BODY$
+BEGIN
+  DELETE FROM public.sessions WHERE user_id = input_user_id;
+  INSERT INTO public.sessions (user_id) VALUES (input_user_id) RETURNING id;
+END;
+$BODY$;
+
+ALTER FUNCTION public.create_session OWNER TO auth;
