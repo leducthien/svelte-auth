@@ -28,6 +28,7 @@ CREATE DATABASE auth
   TABLESPACE = pg_default
   CONNECTION LIMIT = -1;
 
+-- Switch to auth database, all following statements affect this database
 \connect auth
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -49,16 +50,18 @@ ALTER TABLE public.users OWNER TO auth;
 CREATE INDEX users_password ON public.users USING 
   btree (password COLLATE pg_catalog."default" ASC NULLS LAST) TABLESPACE pg_default;
 
+-- or CAST('02:00:00' AS interval)
+-- https://www.postgresql.org/docs/current/sql-altertable.html#SQL-ALTERTABLE-NOTES
 CREATE TABLE IF NOT EXISTS public.sessions (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   user_id int NOT NULL,
-  expires timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + '02:00:00'::interval), -- or CAST('02:00:00' AS interval)
+  expires timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + '02:00:00'::interval), 
   CONSTRAINT sessions_pkey PRIMARY KEY (id),
   CONSTRAINT sessions_fkey FOREIGN KEY (user_id)
     REFERENCES public.users (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE
-    NOT VALID -- https://www.postgresql.org/docs/current/sql-altertable.html#SQL-ALTERTABLE-NOTES
+    NOT VALID 
 ) TABLESPACE pg_default;
 
 ALTER TABLE public.sessions OWNER TO auth;
@@ -69,7 +72,7 @@ CREATE OR REPLACE FUNCTION public.authenticate (input json, OUT response json)
   COST 100
   VOLATILE
   PARALLEL UNSAFE
-AS $BODY$
+AS $$
 DECLARE
   email_input varchar(80) := LOWER(TRIM(input->>'email')::varchar);
   password_input varchar(80) := (input->>'password')::varchar;
@@ -89,21 +92,67 @@ BEGIN
     'sessionId', (SELECT create_session(id) FROM user_authenticated)
   ) INTO response;
 END;
-$BODY$;
+$$;
 
 ALTER FUNCTION public.authenticate OWNER TO auth;
 
 CREATE OR REPLACE FUNCTION public.create_session(input_user_id int) 
   RETURNS uuid
-  LANGUAGE plpgsql
+  RETURNS NULL ON NULL INPUT
+  LANGUAGE SQL
   COST 100
   VOLATILE
   PARALLEL UNSAFE
-AS $BODY$
-BEGIN
+BEGIN ATOMIC
   DELETE FROM public.sessions WHERE user_id = input_user_id;
   INSERT INTO public.sessions (user_id) VALUES (input_user_id) RETURNING id;
 END;
-$BODY$;
 
 ALTER FUNCTION public.create_session OWNER TO auth;
+
+-- If cannot find the session, return empty
+CREATE OR REPLACE FUNCTION public.get_session(input_session_id uuid)
+  RETURNS json
+  RETURNS NULL ON NULL INPUT
+  LANGUAGE SQL
+BEGIN ATOMIC
+  SELECT json_build_object(
+    'sessionId', input_session_id,
+    'userId', u.id,
+    'email', u.email,
+    'expires', s.expires
+  ) AS user_session FROM public.sessions s INNER JOIN public.users u ON s.user_id = u.id
+  WHERE s.id = input_session_id AND s.expires > CURRENT_TIMESTAMP LIMIT 1;
+END;
+
+ALTER FUNCTION public.get_session OWNER TO auth;
+
+CREATE OR REPLACE FUNCTION public.register(input json)
+  RETURNS json
+  LANGUAGE plpgsql
+AS $$
+DECLARE
+  input_email varchar(80) := LOWER(TRIM(input->>'email')::varchar);
+  input_password varchar(80) := (input->>'password')::varchar;
+  user_found json := authenticate(input);
+BEGIN
+  IF (user_found->>'statusCode')::int = 400 THEN 
+    RETURN user_found;
+  END IF;
+
+  IF (user_found->>'statusCode')::int = 200 THEN
+    RETURN json_build_object(
+      'statusCode', 402,
+      'status', 'Cannot register. Account already exists.'
+    );
+  END IF;
+
+  INSERT INTO users(email, password) VALUES (input_email, crypt(input_password, gen_salt('bf', 8)));
+  RETURN json_build_object(
+    'statusCode', 200,
+    'status', 'Register successful'
+  );
+END;
+$$;
+
+ALTER FUNCTION public.register OWNER TO auth;

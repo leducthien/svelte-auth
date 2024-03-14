@@ -54,8 +54,7 @@
 
   async function loginLocal(credentials) {
     try {
-      let response = await fetch("/auth/login", {
-        // https://kit.svelte.dev/docs/web-standards#fetch-apis
+      let response = await fetch("/auth/login", { // https://kit.svelte.dev/docs/web-standards#fetch-apis
         method: "POST",
         headers: {
           "Content-Type": "application/json",
