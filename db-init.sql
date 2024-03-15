@@ -127,6 +127,15 @@ END;
 
 ALTER FUNCTION public.get_session OWNER TO auth;
 
+CREATE OR REPLACE FUNCTION public.hash_password(input_password varchar)
+  RETURNS varchar
+  LANGUAGE SQL
+BEGIN ATOMIC
+  RETURN SELECT crypt(input_password, gen_salt('bf', 8));
+END;
+
+ALTER FUNCTION public.hash_password OWNER TO auth;
+
 CREATE OR REPLACE FUNCTION public.register(input json)
   RETURNS json
   LANGUAGE plpgsql
@@ -147,7 +156,7 @@ BEGIN
     );
   END IF;
 
-  INSERT INTO users(email, password) VALUES (input_email, crypt(input_password, gen_salt('bf', 8)));
+  INSERT INTO users(email, password) VALUES (input_email, hash_password(input_password));
   RETURN json_build_object(
     'statusCode', 200,
     'status', 'Register successful'
@@ -156,3 +165,20 @@ END;
 $$;
 
 ALTER FUNCTION public.register OWNER TO auth;
+
+CREATE OR REPLACE PROCEDURE public.delete_session(input_user_id int)
+  LANGUAGE SQL
+BEGIN ATOMIC
+  DELETE FROM sessions s WHERE s.user_id = input_user_id;
+END;
+
+ALTER PROCEDURE public.delete_session OWNER TO auth;
+
+CREATE OR REPLACE PROCEDURE public.reset_password(input_user_id int, input_password varchar)
+  LANGUAGE SQL
+BEGIN ATOMIC
+  UPDATE users(password) VALUES (hash_password(input_password)) WHERE users.id = input_user_id;
+END;
+
+ALTER PROCEDURE public.reset_password OWNER TO auth;
+
