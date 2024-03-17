@@ -13,7 +13,7 @@ BEGIN
 END
 $do$;
 
-
+-- Remove all connections to the auth database except the current connection
 -- pg_backend_pid: https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE
 SELECT pid, pg_terminate_backend(pid) 
 FROM pg_stat_activity
@@ -40,7 +40,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS public.users (
   id int NOT NULL GENERATED ALWAYS AS IDENTITY,
   email varchar(80) NOT NULL COLLATE pg_catalog."default",  
-  password varchar(20) NOT NULL COLLATE pg_catalog."default",
+  password varchar(80) NOT NULL COLLATE pg_catalog."default",
   CONSTRAINT users_pkey PRIMARY KEY (id),
   CONSTRAINT users_email_unique UNIQUE (email)
 ) TABLESPACE pg_default;
@@ -117,7 +117,6 @@ CREATE OR REPLACE FUNCTION public.get_session(input_session_id uuid)
   LANGUAGE SQL
 BEGIN ATOMIC
   SELECT json_build_object(
-    'sessionId', input_session_id,
     'userId', u.id,
     'email', u.email,
     'expires', s.expires
@@ -131,7 +130,7 @@ CREATE OR REPLACE FUNCTION public.hash_password(input_password varchar)
   RETURNS varchar
   LANGUAGE SQL
 BEGIN ATOMIC
-  RETURN SELECT crypt(input_password, gen_salt('bf', 8));
+  SELECT crypt(input_password, gen_salt('bf', 8));
 END;
 
 ALTER FUNCTION public.hash_password OWNER TO auth;
@@ -177,8 +176,33 @@ ALTER PROCEDURE public.delete_session OWNER TO auth;
 CREATE OR REPLACE PROCEDURE public.reset_password(input_user_id int, input_password varchar)
   LANGUAGE SQL
 BEGIN ATOMIC
-  UPDATE users(password) VALUES (hash_password(input_password)) WHERE users.id = input_user_id;
+  UPDATE users SET password = hash_password(input_password) WHERE users.id = input_user_id;
 END;
 
 ALTER PROCEDURE public.reset_password OWNER TO auth;
 
+CREATE OR REPLACE PROCEDURE public.upsert_user(input_user json)
+  LANGUAGE plpgsql
+AS $$
+DECLARE
+  input_user_id int := coalesce((input_user->>'id')::int,0);
+  input_email varchar := (input_user->>'email')::varchar;
+  input_password varchar := coalesce((input_user->>'password'),'');
+BEGIN
+  IF input_user_id = 0 THEN
+    INSERT INTO users(email, password) VALUES (input_email, hash_password(input_password));
+  ELSE
+    UPDATE users SET
+      email = input_email,
+      password = CASE WHEN input_password = '' THEN password ELSE hash_password(input_password) END
+    WHERE id = input_user_id;
+  END IF;
+END;
+$$;
+
+ALTER PROCEDURE public.upsert_user OWNER TO auth;
+
+CALL upsert_user(json_build_object(
+  'email','timducle@yahoo.com',
+  'password', '123'));
+--CALL upsert_user("{'email':'a@b.vn', 'password': '345'}"::json);

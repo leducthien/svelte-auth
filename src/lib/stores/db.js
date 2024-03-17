@@ -1,3 +1,5 @@
+import { Pool } from 'pg';
+
 let users = [ // Simulate the users table in db 
   {
     id: 1,
@@ -24,18 +26,24 @@ let sessions = [ // Simulate the sessions table in db
   }
 ];
 
+const pool = new Pool({
+  host: '127.0.0.1',
+  port: 5443,
+  database: 'auth',
+  user: 'postgres',
+  password:'FrebuMIju2'
+});
+
 export async function findUserBySessionId(sessionId) {
-  let sessionIdInt = Number.parseInt(sessionId); // Input sessionId is a string so we need to parse it
-  let session = sessions.find(session => session.id === sessionIdInt && isNotExpired(session.expires));
-  if(!session) {
+  console.log(`Db findUserBySessionId called at ${Date.now()}`, {sessionId});
+  let result = await pool.query('SELECT get_session($1)', [sessionId]);
+  if(result.rowCount == 0) {
+    console.log('- Session is not found');
     return null;
   }
-  let user = users.find(user => user.id === session.userId);
-  console.log(`Db findUserBySessionId called at ${Date.now()}`, {sessionId, user});
-  if(user) {
-    return { id: user.id, email: user.email };
-  }
-  return null;
+  console.log('- Session is found');
+  let user = result.rows[0];
+  return { id: user.userId, email: user.email, expires: user.expires };
 }
 
 /**
@@ -49,15 +57,15 @@ function isNotExpired(dateUTCString) {
 }
 
 export async function login({email, password}) {
-  console.log(`DB login function is called at ${Date.now()}`);
+  console.log(`DB login function is called at ${Date.now()}`, {email, password});
   let user = await findUserByEmail({email, password});
   if(user) {
     console.log('- User is found', user);
-    let session = sessions.find(session => session.userId = user.id);
+    let session = await findUserBySessionId(user.sessionId);
     if(session && isNotExpired(session.expires)) {
       console.log('- Session is valid and not expired', session);
       return {
-        id: session.id,
+        id: user.sessionId,
         email: user.email,
         expires: session.expires
       };
@@ -68,11 +76,15 @@ export async function login({email, password}) {
 }
 
 export async function findUserByEmail({email, password}) {
-  let user = users.find(user => user.email === email && user.password === password);
-  if(user) {
-    return {id: user.id, email:user.email};
+  let result = await pool.query('SELECT authenticate($1)', [{email,password}]);
+  if(result.rowCount == 0) {
+    return null;
   }
-  return null;
+  let user = result.rows[0];
+  if(user.statusCode != 200) {
+    return null;
+  }
+  return {id: user.userId, email:user.email, sessionId: user.sessionId};
 }
 
 export async function findEmail(email) {
