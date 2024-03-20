@@ -128,7 +128,7 @@
   <button on:click|preventDefault={login}>Sign in</button>
 </form>
 <a href="/forgot">Forgot your password?</a>
-<a href="/">Don't have an account. Sign up free.</a>
+<a href="/signup">Don't have an account. Sign up free.</a>
 {/if}
 
 <style>

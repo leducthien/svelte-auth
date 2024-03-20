@@ -25,7 +25,7 @@
       method: 'POST'
     });
     if(response.ok) {
-      $loginSession = undefined; // clear login session on the client
+      $loginSession = null; // clear login session on the client
       goto('/login');
     } else {
       console.log(`Error logging out: ${response.status} ${response.statusText}`);

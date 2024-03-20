@@ -36,14 +36,14 @@ const pool = new Pool({
 
 export async function findUserBySessionId(sessionId) {
   console.log(`Db findUserBySessionId called at ${Date.now()}`, {sessionId});
-  let result = await pool.query('SELECT get_session($1)', [sessionId]);
+  let result = await pool.query('SELECT get_session($1) AS session', [sessionId]);
   if(result.rowCount == 0) {
     console.log('- Session is not found');
     return null;
   }
   console.log('- Session is found');
-  let user = result.rows[0];
-  return { id: user.userId, email: user.email, expires: user.expires };
+  let session = result.rows[0].session;
+  return { id: session.userId, email: session.email, expires: session.expires };
 }
 
 /**
@@ -76,15 +76,17 @@ export async function login({email, password}) {
 }
 
 export async function findUserByEmail({email, password}) {
-  let result = await pool.query('SELECT authenticate($1)', [{email,password}]);
+  let result = await pool.query('SELECT authenticate($1)', [JSON.stringify({email,password})]);
   if(result.rowCount == 0) {
     return null;
   }
-  let user = result.rows[0];
-  if(user.statusCode != 200) {
+  let auth = result.rows[0].authenticate; // A row has this format {"authenticate":{"statusCode":200,"status":"Success","user":{"id":1,"email":"timducle@yahoo.com"},"sessionId":"29b604a6-85db-4e7c-a358-ab342406a1e7"}}
+  console.log(`- User: ${JSON.stringify(auth)}`);
+  if(auth.statusCode != 200) {
+    console.log(`- Status code: ${auth.statusCode}, message: ${auth.status}`);
     return null;
   }
-  return {id: user.userId, email:user.email, sessionId: user.sessionId};
+  return {id: auth.user.id, email:auth.user.email, sessionId: auth.sessionId};
 }
 
 export async function findEmail(email) {
