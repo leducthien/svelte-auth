@@ -34,6 +34,21 @@ const pool = new Pool({
   password:'FrebuMIju2'
 });
 
+export async function signup({email, password}) {
+  let result = await pool.query('SELECT register($1)', [JSON.stringify({email, password})]);
+  if(result.rowCount == 0) {
+    return {
+      statusCode: 500,
+      status: 'Some error occured during signup'
+    };
+  }
+  let r0 = result.rows[0].register;
+  return {
+    statusCode: r0.statusCode,
+    status: r0.status
+  }
+}
+
 export async function findUserBySessionId(sessionId) {
   console.log(`Db findUserBySessionId called at ${Date.now()}`, {sessionId});
   let result = await pool.query('SELECT get_session($1) AS session', [sessionId]);
