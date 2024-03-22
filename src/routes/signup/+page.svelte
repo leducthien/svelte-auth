@@ -19,8 +19,9 @@
         body: JSON.stringify({email, password})
       });
       if(response.ok) {
-        
-        goto('/login');
+        let data = await response.json();
+        noticeField.textContent = data.statusCode + ' ' + data.status;
+        // goto('/login');
       } else {
         noticeField.textContent = response.status + ' ' + response.statusText;
       }
@@ -49,7 +50,7 @@
   <div>
     <label>
       Email
-      <input id="email" type="email" placeholder="Email" required bind:value={email} />
+      <input id="email" type="email" placeholder="Email" autocomplete="email" required bind:value={email} />
     </label>
   <div id="email-error" class="error" />
   </div>

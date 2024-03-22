@@ -1,14 +1,14 @@
 import { json, error } from '@sveltejs/kit';
-import { login } from '$lib/stores/db';
+import { login, signup } from '$lib/stores/db';
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
   console.log(`API auth route called at ${Date.now()} for path ${event.url.pathname}`);
   let { slug } = event.params;
   let { cookies } = event;
-  let data, headers;
+  let data, headers, requestBody;
   switch (slug) {
     case 'login':
-      let requestBody = await event.request.json();
+      requestBody = await event.request.json();
       let loginSession = await login({email: requestBody.email, password: requestBody.password});
       if (loginSession) {
         data = {
@@ -33,6 +33,15 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
         cookies.delete('session', { path: '/' });
       }
       break;
+    case 'signup':
+      requestBody = await event.request.json();
+      let signupResult = await signup({email: requestBody.email, password: requestBody.password});
+      if(signupResult) {
+        data = {
+          statusCode: signupResult.statusCode,
+          status: signupResult.status
+        };
+      }
     default:
       throw error(404, 'Invalid endpoint'); // 404: Not Found
   }
