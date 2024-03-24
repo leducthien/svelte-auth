@@ -1,5 +1,14 @@
 <script>
+  import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
+
   let email, password;
+
+  onMount(() => {
+    let emailField = document.getElementById('email');
+    emailField.focus();
+  });
+
   async function signup() {
     let form = document.getElementById('signup-form');
     let emailField = document.getElementById('email');
@@ -19,9 +28,11 @@
         body: JSON.stringify({email, password})
       });
       if(response.ok) {
-        let data = await response.json();
-        noticeField.textContent = data.statusCode + ' ' + data.status;
-        // goto('/login');
+        let responseBody = await response.json();
+        noticeField.textContent = responseBody.statusCode + ' ' + responseBody.status;
+        if(responseBody.statusCode == 200) {
+          goto('/login');
+        }
       } else {
         noticeField.textContent = response.status + ' ' + response.statusText;
       }

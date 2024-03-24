@@ -1,5 +1,5 @@
 import { json, error } from '@sveltejs/kit';
-import { login, signup } from '$lib/stores/db';
+import { login, signup, deleteUserSession } from '$lib/stores/db';
 
 export async function POST(event) { // event: RequestEvent; https://kit.svelte.dev/docs/types#public-types-requestevent
   console.log(`API auth route called at ${Date.now()} for path ${event.url.pathname}`);
@@ -28,9 +28,17 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
       break;
     case 'logout':
       if(event.locals.user) {
-        data = { message: 'Logout successful' };
-        // headers = { 'Set-Cookie': `session=; Path=/; SameSite=Lax; HttpOnly; Expires=${new Date().toUTCString()}` }; // This will tell the browser to delete the cookie 'session'
-        cookies.delete('session', { path: '/' });
+        let deleteUserSessionResult = await deleteUserSession(cookies.get('session'));
+        if(deleteUserSessionResult.statusCode == 200) {
+          // headers = { 'Set-Cookie': `session=; Path=/; SameSite=Lax; HttpOnly; Expires=${new Date().toUTCString()}` }; // This will tell the browser to delete the cookie 'session'
+          cookies.delete('session', { path: '/' });
+          data = { message: 'Logout successful' };
+        } else {
+          data = {
+            statusCode: deleteUserSessionResult.statusCode,
+            status: deleteUserSessionResult.status
+          };
+        }        
       }
       break;
     case 'signup':
@@ -42,6 +50,7 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
           status: signupResult.status
         };
       }
+      break;
     default:
       throw error(404, 'Invalid endpoint'); // 404: Not Found
   }

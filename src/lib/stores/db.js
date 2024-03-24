@@ -34,8 +34,26 @@ const pool = new Pool({
   password:'FrebuMIju2'
 });
 
+export async function deleteUserSession(sessionId) {
+  try {
+    await pool.query('DELETE FROM sessions WHERE id = $1', [sessionId]);  
+  } catch (error) {
+    return {
+      statusCode: 500,
+      status: error.msg
+    };
+  } finally {
+    return {
+      statusCode: 200,
+      status: 'Delete session successfully'
+    };
+  }
+}
+
 export async function signup({email, password}) {
+  console.log(`Db signup function is called, input email: ${email}`);
   let result = await pool.query('SELECT register($1)', [JSON.stringify({email, password})]);
+  console.log(`Signup result `, JSON.stringify(result.rows));
   if(result.rowCount == 0) {
     return {
       statusCode: 500,

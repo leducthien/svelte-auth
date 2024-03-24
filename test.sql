@@ -2,4 +2,4 @@
 
 SELECT authenticate('{"email":"timducle@yahoo.com", "password":"123"}');
 
-SELECT register('{"email":"timducle@yahoo.com", "password":"123"}');
+SELECT register('{"email":"timducle@yahoo.com", "password":"1"}');

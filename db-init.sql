@@ -66,50 +66,6 @@ CREATE TABLE IF NOT EXISTS public.sessions (
 
 ALTER TABLE public.sessions OWNER TO auth;
 
-CREATE OR REPLACE FUNCTION public.authenticate (input json, OUT response json) 
-  RETURNS json 
-  LANGUAGE plpgsql
-  COST 100
-  VOLATILE
-  PARALLEL UNSAFE
-AS $$
-DECLARE
-  email_input varchar(80) := LOWER(TRIM(input->>'email')::varchar);
-  password_input varchar(80) := (input->>'password')::varchar;
-BEGIN
-  IF email_input IS NULL OR password_input IS NULL THEN
-    response := json_build_object('statusCode', 400, 'status', 'Please enter email and password', 'user', NULL);
-    RETURN;
-  END IF;
-
-  WITH user_authenticated AS (
-    SELECT id FROM public.users
-    WHERE email = email_input AND password = crypt(password_input, password) LIMIT 1
-  ) SELECT json_build_object(
-    'statusCode', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN 200 ELSE 401 END,
-    'status', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN 'Success' ELSE 'Wrong email/password' END,
-    'user', CASE WHEN (SELECT COUNT(*) FROM user_authenticated) > 0 THEN (SELECT json_build_object('id', id, 'email', email_input) FROM user_authenticated) ELSE NULL END,
-    'sessionId', (SELECT create_session(id) FROM user_authenticated)
-  ) INTO response;
-END;
-$$;
-
-ALTER FUNCTION public.authenticate OWNER TO auth;
-
-CREATE OR REPLACE FUNCTION public.create_session(input_user_id int) 
-  RETURNS uuid
-  RETURNS NULL ON NULL INPUT
-  LANGUAGE SQL
-  COST 100
-  VOLATILE
-  PARALLEL UNSAFE
-BEGIN ATOMIC
-  DELETE FROM public.sessions WHERE user_id = input_user_id;
-  INSERT INTO public.sessions (user_id) VALUES (input_user_id) RETURNING id;
-END;
-
-ALTER FUNCTION public.create_session OWNER TO auth;
-
 -- If cannot find the session, return empty
 CREATE OR REPLACE FUNCTION public.get_session(input_session_id uuid)
   RETURNS json
@@ -135,35 +91,7 @@ END;
 
 ALTER FUNCTION public.hash_password OWNER TO auth;
 
-CREATE OR REPLACE FUNCTION public.register(input json)
-  RETURNS json
-  LANGUAGE plpgsql
-AS $$
-DECLARE
-  input_email varchar(80) := LOWER(TRIM(input->>'email')::varchar);
-  input_password varchar(80) := (input->>'password')::varchar;
-  user_found json := authenticate(input);
-BEGIN
-  IF (user_found->>'statusCode')::int = 400 THEN 
-    RETURN user_found;
-  END IF;
 
-  IF (user_found->>'statusCode')::int = 200 THEN
-    RETURN json_build_object(
-      'statusCode', 402,
-      'status', 'Cannot register. Account already exists.'
-    );
-  END IF;
-
-  INSERT INTO users(email, password) VALUES (input_email, hash_password(input_password));
-  RETURN json_build_object(
-    'statusCode', 200,
-    'status', 'Register successful'
-  );
-END;
-$$;
-
-ALTER FUNCTION public.register OWNER TO auth;
 
 CREATE OR REPLACE PROCEDURE public.delete_session(input_user_id int)
   LANGUAGE SQL
