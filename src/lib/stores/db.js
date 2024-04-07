@@ -94,13 +94,12 @@ export async function login({email, password}) {
   let user = await findUserByEmail({email, password});
   if(user) {
     console.log('- User is found', user);
-    let session = await findUserBySessionId(user.sessionId);
-    if(session && isNotExpired(session.expires)) {
-      console.log('- Session is valid and not expired', session);
+    if(isNotExpired(user.expires)) {
+      console.log('- Session is valid and not expired');
       return {
         id: user.sessionId,
         email: user.email,
-        expires: session.expires
+        expires: user.expires
       };
     }
   }
@@ -119,7 +118,7 @@ export async function findUserByEmail({email, password}) {
     console.log(`- Status code: ${auth.statusCode}, message: ${auth.status}`);
     return null;
   }
-  return {id: auth.user.id, email:auth.user.email, sessionId: auth.sessionId};
+  return {id: auth.user.id, email:auth.user.email, sessionId: auth.sessionId, expires: auth.expires};
 }
 
 export async function findEmail(email) {
