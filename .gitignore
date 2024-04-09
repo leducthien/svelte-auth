@@ -11,3 +11,8 @@ vite.config.ts.timestamp-*
 
 # Local Netlify folder
 .netlify
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
