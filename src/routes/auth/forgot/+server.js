@@ -7,13 +7,14 @@ export async function POST(event) {
   console.log(`API route called at ${Date.now()} for path ${event.url.pathname}`);
   console.log(`Domain env variable: ${DOMAIN}`);
   let requestBody = await event.request.json();
-  let user = await findEmail(requestBody.email);
-  if(user) {
-    let token = jwt.sign({subject:user.id}, JWT_SECRET, { expiresIn: '30m'}); // Create a token expiring in 30 minutes
-    let defaultClient = Brevo.ApiClient.instance;
-    defaultClient.authentications['api-key'].apiKey = BREVO_API_KEY;
-    let apiInstance = new Brevo.TransactionalEmailsApi();
-    try {
+  try {
+    let user = await findEmail(requestBody.email);
+    if (user) {
+      let token = jwt.sign({ subject: user.id }, JWT_SECRET, { expiresIn: '30m' }); // Create a token expiring in 30 minutes
+      let client = Brevo.ApiClient.instance;
+      client.authentications['api-key'].apiKey = BREVO_API_KEY;
+      let apiInstance = new Brevo.TransactionalEmailsApi();
+
       let data = await apiInstance.sendTransacEmail( // Send using htmlContent
         {
           'subject': 'Password reset',
@@ -24,12 +25,12 @@ export async function POST(event) {
         }
       );
       console.log('- Email sent', data);
-    } catch (error) {
-      console.error(error);
-    }
-  } else {
-    console.log(`- User not found for email ${requestBody.email}`);
-  }
 
-  return new Response(undefined, {status: 204}); // HTTP 204: No content
+    } else {
+      console.log(`- User not found for email ${requestBody.email}`);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  return new Response(undefined, { status: 204 }); // HTTP 204: No content
 }

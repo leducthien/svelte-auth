@@ -122,11 +122,11 @@ export async function findUserByEmail({email, password}) {
 }
 
 export async function findEmail(email) {
-  let user = users.find(user => user.email === email);
-  if(user) {
-    return { id: user.id };
+  let result = await pool.query('SELECT id FROM users WHERE email=$1 LIMIT 1', [email]);
+  if(result.rowCount == 0) {
+    return null;
   }
-  return null;
+  return { id: result.rows[0].id };
 }
 
 export async function findUserById(id) {
