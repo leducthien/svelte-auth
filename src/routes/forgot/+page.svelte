@@ -1,6 +1,6 @@
 <script>
   import { goto } from '$app/navigation';
-  let email = '';
+  let email = '', notice = '';
   async function reset() {
     let form = document.getElementById('forgot');
     if(form.checkValidity()) {
@@ -12,17 +12,26 @@
         body: JSON.stringify({email})
       });
       if(response.ok) {
-        goto('/forgot/sent');
+        let responseBody = await response.json();
+        if(responseBody.code == 2000) {
+          goto('/forgot/sent');
+        }
+        else if(responseBody == 2001) {
+          notice = responseBody.text;
+        }
+        else {
+          notice = responseBody.code + ' ' + responseBody.text;
+        }
       } else {
-        console.log('Something is wrong', response.status);
+        notice = 'Something is wrong ' + response.status; 
       }
     } else { // Form is not valid
-
+      notice = 'Form is not valid';
     }
   }
 </script>
 
-
+{notice}
 <form id="forgot">
   <label>
     Email

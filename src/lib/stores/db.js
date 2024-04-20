@@ -26,7 +26,7 @@ let sessions = [ // Simulate the sessions table in db
   }
 ];
 
-const pool = new Pool({
+export const pool = new Pool({
   host: '127.0.0.1',
   port: 5443,
   database: 'auth',

@@ -1,6 +1,6 @@
 import { JWT_SECRET } from '$env/static/private';
 import jwt from 'jsonwebtoken';
-import { findUserById } from '$lib/stores/db';
+import { pool } from '$lib/stores/db';
 import { json } from '@sveltejs/kit';
 
 export async function PUT(event) {
@@ -10,20 +10,29 @@ export async function PUT(event) {
   try {
     let decoded = jwt.verify(token, JWT_SECRET);
     let userId = decoded.subject;
-    let user = findUserById(userId);
-    if(user) {
-      return json({message: 'Password reset successed'}, {
-        status: 200,
-      });
-    } else {
-      return json({message: 'User not found. Password reset failed'}, {
-        status: 403 // 403: Forbidden
-      });
-    }
+    let password = requestBody.password;
+    await pool.query('CALL reset_password($1, $2)', [userId, password]);
+    return json({ code: 0, text: 'Password reset successed' });
   } catch (error) {
-    console.error(error.message);
-    return json({ message: error.message }, {
-      status: 403
-    });
+    return json({ code: 1, text: error.message });
   }
+
+  // jwt.verify(token, JWT_SECRET, (err, decoded) => {
+  //   if (err) {
+  //     if (err.name === 'TokenExpiredError') {
+  //       return json({ code: 1, text: 'Reset password link is expired' });
+  //     } else {
+  //       let s = err.name + ' ' + err.message;
+  //       console.log(s);
+  //       return json({ code: 1, text: s });
+  //     }
+  //   }
+  //   
+  //   try {
+  //     
+  //   } catch (error) {
+  //     'User not found. Password reset failed' });
+  //   }
+
+  // });
 }

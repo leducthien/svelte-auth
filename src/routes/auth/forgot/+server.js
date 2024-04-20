@@ -2,10 +2,11 @@ import { findEmail } from '$lib/stores/db';
 import jwt from 'jsonwebtoken';
 import Brevo from '@getbrevo/brevo';
 import { JWT_SECRET, BREVO_API_KEY, DOMAIN } from '$env/static/private';
+import { json } from '@sveltejs/kit';
 
 export async function POST(event) {
   console.log(`API route called at ${Date.now()} for path ${event.url.pathname}`);
-  console.log(`Domain env variable: ${DOMAIN}`);
+  console.log(`- Domain env variable: ${DOMAIN}`);
   let requestBody = await event.request.json();
   try {
     let user = await findEmail(requestBody.email);
@@ -14,7 +15,6 @@ export async function POST(event) {
       let client = Brevo.ApiClient.instance;
       client.authentications['api-key'].apiKey = BREVO_API_KEY;
       let apiInstance = new Brevo.TransactionalEmailsApi();
-
       let data = await apiInstance.sendTransacEmail( // Send using htmlContent
         {
           'subject': 'Password reset',
@@ -25,12 +25,14 @@ export async function POST(event) {
         }
       );
       console.log('- Email sent', data);
-
+      return json({code: 2000, text: 'Email sent'});
     } else {
       console.log(`- User not found for email ${requestBody.email}`);
+      return json({code: 2001, text: 'Email not found'});
     }
   } catch (error) {
     console.error(error);
+    return json({code: 5000, text: 'Error occured'}); 
   }
-  return new Response(undefined, { status: 204 }); // HTTP 204: No content
+  
 }
