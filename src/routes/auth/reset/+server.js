@@ -12,7 +12,7 @@ export async function PUT(event) {
     let userId = decoded.subject;
     let password = requestBody.password;
     await pool.query('CALL reset_password($1, $2)', [userId, password]);
-    return json({ code: 0, text: 'Password reset successed' });
+    return json({ code: 0, text: 'Password reset succeeded' });
   } catch (error) {
     return json({ code: 1, text: error.message });
   }

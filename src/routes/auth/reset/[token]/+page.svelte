@@ -1,33 +1,48 @@
 <script>
-  import { goto } from '$app/navigation';
+  import { goto } from "$app/navigation";
   export let data;
-  let form, password, confirmPassword;
+  let form,
+    password,
+    confirmPassword,
+    notice = "";
 
   async function reset() {
-    if(form.checkValidity()) {
-      if(password !== confirmPassword) {
-        console.log('Password not match.'); 
-      }
-      let response = await fetch('/auth/reset', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({token: data.token, password, confirmPassword})
-      })
-      if(response.ok) {
-        goto('/auth/reset/success');
+    if (form.checkValidity()) {
+      if (password !== confirmPassword) {
+        notice = "Password does not match.";
       } else {
-        let responseBody = await response.json();
-        console.log('fetch failed', responseBody.message, response.status, response.statusText);
+        let response = await fetch("/auth/reset", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: data.token,
+            password,
+            confirmPassword,
+          }),
+        });
+        if (response.ok) {
+          let responseBody = await response.json();
+          if (responseBody == 0) {
+            goto("/auth/reset/success");
+          } else {
+            notice = responseBody.text;
+          }
+        } else {
+          notice = response.status + ' ' + response.statusText;
+        }
       }
     } else {
-      console.log('Form is not valid');
+      notice = "Form is not valid";
     }
   }
 </script>
 
+{#if data.code == 0}
 <h1>Reset password</h1>
+
+<div class="notice">{notice}</div>
 <form bind:this={form}>
   <label>
     New password
@@ -39,3 +54,13 @@
   </label>
   <button on:click|preventDefault={reset}>Submit</button>
 </form>
+{:else}
+<p>Link is not valid</p>
+{/if}
+
+<style>
+  .notice {
+    height: 1.5em;
+    color: red;
+  }
+</style>
