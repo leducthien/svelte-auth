@@ -58,7 +58,6 @@ DECLARE
   email_input varchar := LOWER(TRIM(input->>'email')::varchar);
   password_input varchar := (input->>'password')::varchar;
   login_session json;
-  auth_count int := 0;
   user_id int;
 BEGIN
   IF email_input IS NULL OR password_input IS NULL THEN
@@ -71,9 +70,11 @@ BEGIN
   WITH user_authenticated AS (
     SELECT id FROM public.users
     WHERE email = email_input AND password = crypt(password_input, password) LIMIT 1
-  ) SELECT count(id), id INTO auth_count, user_id FROM user_authenticated GROUP BY id;
+  ) SELECT id INTO user_id FROM user_authenticated;
 
-  IF auth_count = 0 THEN
+  raise notice 'Authentication result for email %: user id %', email_input, user_id;
+
+  IF user_id is NULL THEN
     response := json_build_object(
       'statusCode', 401,
       'status', 'Wrong email/password'
