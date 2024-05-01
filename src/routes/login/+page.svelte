@@ -88,8 +88,8 @@
 <h1>Sign In</h1>
 
 <p>
-  Please enter a valid email and password of the account you have registered
-  with our site when you singed up.
+  Please enter valid email and password you have registered
+  with us when you singed up.
 </p>
 
 <div bind:this={notice} class="notice" />
@@ -133,10 +133,10 @@
 
 <style>
   /* Styles for invalid fields */
-  input:invalid {
+  /*input:invalid {
     border-color: #900;
     background-color: #fdd;
-  }
+  }*/
 
   input:focus:invalid {
     outline: none;

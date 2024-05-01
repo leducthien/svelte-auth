@@ -2,23 +2,13 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
-  let email, password;
+  let email='', password='', noticeField ='', form, emailField, emailError = '', passwordField, passwordError = '';
 
   onMount(() => {
-    let emailField = document.getElementById('email');
     emailField.focus();
   });
 
   async function signup() {
-    let form = document.getElementById('signup-form');
-    let emailField = document.getElementById('email');
-    let emailError = document.getElementById('email-error');
-    let passwordField = document.getElementById('password');
-    let passwordError = document.getElementById('password-error');
-    let noticeField = document.getElementById('notice');
-    emailError.textContent = '';
-    passwordError.textContent = '';
-    noticeField.textContent = '';
     if(form.checkValidity()) {
       let response = await fetch('/auth/signup', {
         method: 'POST',
@@ -28,13 +18,16 @@
         body: JSON.stringify({email, password})
       });
       if(response.ok) {
-        let responseBody = await response.json();
-        noticeField.textContent = responseBody.statusCode + ' ' + responseBody.status;
-        if(responseBody.statusCode == 200) {
-          goto('/login');
+        let responseBody = await response.json();        
+        
+        if(responseBody.code == 0) {
+          noticeField = 'Verification email sent. Please check your email.';
+        }
+        else {
+          noticeField = responseBody.text;
         }
       } else {
-        noticeField.textContent = response.status + ' ' + response.statusText;
+        noticeField = responseBody.text;
       }
     } else {
       for(let field of form.elements) {
@@ -44,10 +37,10 @@
         }
       }
       if(!emailField.validity.valid) {
-        emailError.textContent = 'Please enter a valid email';
+        emailError = 'Please enter a valid email';
       }
       if(!passwordField.validity.valid) {
-        passwordError.textContent = 'Please enter a valid password';
+        passwordError = 'Please enter a valid password';
       }
     }   
     
@@ -56,21 +49,22 @@
 
 <h1>Sign up</h1>
 
-<div id='notice' class="error" />
-<form id='signup-form' novalidate>
+<p>Please enter valid email and password.</p>
+<div class="error">{noticeField}</div>
+<form bind:this={form} novalidate>
   <div>
     <label>
       Email
-      <input id="email" type="email" placeholder="Email" autocomplete="email" required bind:value={email} />
+      <input type="email" placeholder="Email" autocomplete="email" required bind:value={email} bind:this={emailField} />
     </label>
-  <div id="email-error" class="error" />
+  <div class="error">{emailError}</div>
   </div>
   <div>
     <label>
       Password
-      <input id="password" type="password" required bind:value={password} />
+      <input id="password" type="password" required bind:value={password} bind:this={passwordField} />
     </label>
-    <div id="password-error" class="error" />
+    <div class="error">{passwordError}</div>
   </div>
   <button on:click|preventDefault={signup}>Sign up</button>
 </form>

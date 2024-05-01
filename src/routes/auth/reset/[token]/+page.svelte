@@ -18,13 +18,12 @@
           },
           body: JSON.stringify({
             token: data.token,
-            password,
-            confirmPassword,
+            password
           }),
         });
         if (response.ok) {
           let responseBody = await response.json();
-          if (responseBody == 0) {
+          if (responseBody.code == 0) {
             goto("/auth/reset/success");
           } else {
             notice = responseBody.text;

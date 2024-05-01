@@ -12,27 +12,8 @@ export async function PUT(event) {
     let userId = decoded.subject;
     let password = requestBody.password;
     await pool.query('CALL reset_password($1, $2)', [userId, password]);
-    return json({ code: 0, text: 'Password reset succeeded' });
+    return json({ code: 0, text: 'Password reset is successful.' });
   } catch (error) {
     return json({ code: 1, text: error.message });
   }
-
-  // jwt.verify(token, JWT_SECRET, (err, decoded) => {
-  //   if (err) {
-  //     if (err.name === 'TokenExpiredError') {
-  //       return json({ code: 1, text: 'Reset password link is expired' });
-  //     } else {
-  //       let s = err.name + ' ' + err.message;
-  //       console.log(s);
-  //       return json({ code: 1, text: s });
-  //     }
-  //   }
-  //   
-  //   try {
-  //     
-  //   } catch (error) {
-  //     'User not found. Password reset failed' });
-  //   }
-
-  // });
 }
