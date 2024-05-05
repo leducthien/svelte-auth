@@ -10,6 +10,8 @@
 
   async function signup() {
     if(form.checkValidity()) {
+      emailError = '';
+      passwordError = '';
       let response = await fetch('/auth/signup', {
         method: 'POST',
         headers: {
@@ -19,9 +21,9 @@
       });
       if(response.ok) {
         let responseBody = await response.json();        
-        
         if(responseBody.code == 0) {
-          noticeField = 'Verification email sent. Please check your email.';
+          goto('/signup/sent');
+          // noticeField = 'Verification email sent. Please check your email.';
         }
         else {
           noticeField = responseBody.text;
@@ -30,6 +32,9 @@
         noticeField = responseBody.text;
       }
     } else {
+      noticeField = '';
+      emailError = '';
+      passwordError = '';
       for(let field of form.elements) {
         if(field instanceof HTMLInputElement && !field.checkValidity()) {
           field.focus();
@@ -43,7 +48,6 @@
         passwordError = 'Please enter a valid password';
       }
     }   
-    
   }
 </script>
 

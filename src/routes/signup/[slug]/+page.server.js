@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '$env/static/private';
+import { pool } from '$lib/stores/db';
 
 export async function load(event) {
     let token = event.params.slug;
