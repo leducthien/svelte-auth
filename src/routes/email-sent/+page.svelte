@@ -1,0 +1,1 @@
+<p>Email has been sent. Please check your email for instructions.</p>

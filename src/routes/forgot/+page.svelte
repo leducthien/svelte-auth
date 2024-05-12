@@ -14,7 +14,7 @@
       if(response.ok) {
         let responseBody = await response.json();
         if(responseBody.code == 2000) {
-          goto('/forgot/sent');
+          goto('/email-sent');
         }
         else if(responseBody == 2001) {
           notice = responseBody.text;

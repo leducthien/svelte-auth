@@ -22,7 +22,7 @@
       if(response.ok) {
         let responseBody = await response.json();        
         if(responseBody.code == 0) {
-          goto('/signup/sent');
+          goto('/email-sent');
           // noticeField = 'Verification email sent. Please check your email.';
         }
         else {

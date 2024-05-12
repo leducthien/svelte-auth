@@ -49,7 +49,7 @@ export async function POST(event) { // event: RequestEvent; https://kit.svelte.d
       try {
         requestBody = await event.request.json();
         if (requestBody.email && requestBody.password) {
-          let findEmail = await pool.query('SELECT id FROM users WHERE email = $1 LIMIT 1', [requestBody.email]);
+          let findEmail = await pool.query('SELECT id FROM users WHERE email = $1 LIMIT 1', [requestBody.email.trim().toLowerCase()]);
           if(findEmail.rowCount > 0) {
             return json({code: 1, text: 'Email already exists'});
           }
